@@ -1,0 +1,7 @@
+.container {
+  background: #232323;
+  color: rgba(256, 256, 256, 0.75);
+  font-size: 1.5em;
+  min-height: 1.5em;
+  padding: .5em 1em;
+}
