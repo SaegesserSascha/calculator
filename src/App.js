@@ -1,10 +1,12 @@
 import "./App.css";
 import React, { useState, useEffect } from "react";
+import Result from "./components/result/Result";
 import Expression from "./components/expression/Expression";
 import Display from "./components/display/Display";
 import NumericKeypad from "./components/numeric-keypad/NumericKeypad";
 
 function App() {
+  const [result, setResult] = useState("");
   const [expression, setExpression] = useState("");
   const [number, setNumber] = useState(0);
   const [isPositive, setIsPositive] = useState(true);
@@ -70,7 +72,7 @@ function App() {
       var op = "";
       if (number.toString().endsWith(".")) {
         str = number.toString().slice(0, -1);
-        setNumber(parseInt(str));
+        setNumber(parseFloat(str));
       }
       switch (operator) {
         case "+":
@@ -106,7 +108,7 @@ function App() {
         setIsDecimal(false);
       }
       const str = number.toString().slice(0, -1);
-      let num = parseInt(str);
+      let num = parseFloat(str);
       if (Number.isNaN(num)) {
         num = 0;
       }
@@ -118,14 +120,82 @@ function App() {
     if (expression.length > 0) {
       var arr = parseExpressionToArray();
       while (arr.length > 1) {
+        console.log(arr);
         arr = solveNextStep(arr);
       }
-      setExpression(arr[0]);
+      setResult(arr[0]);
+      setExpression("");
+      setNumber(0);
     }
   }
 
+  /**
+   * Multiplication and division
+   * Addition and subtraction
+   * Left to Right 
+   */
   function solveNextStep(arr) {
-    return []; // TODO Solve the next step based on the order of operations.
+    console.log(arr);
+    let opAtIndex, index, op, num1, num2, result;
+
+    opAtIndex = getNextOperator(arr);
+    index = opAtIndex[0];
+    op = opAtIndex[1];
+
+    num1 = parseFloat(arr[index - 1]);
+    num2 = parseFloat(arr[index + 1]);
+    result = calculateStep(op, num1, num2);
+
+    arr[index - 1] = result;
+    arr[index] = null;
+    arr[index + 1] = null;
+
+    return arr.filter(el => el !== null);
+  }
+
+  function getNextOperator(arr) {
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] === "*") {
+        return [i, "*"];
+      } else if (arr[i] === "/") {
+        return [i, "/"];
+      }
+    }
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] === "+") {
+        return [i, "+"];
+      } else if (arr[i] === "-") {
+        return [i, "-"];
+      }
+    }
+  }
+
+  function calculateStep(op, num1, num2) {
+    let result = 0;
+
+    try {
+      num1 = parseFloat(num1);
+      num2 = parseFloat(num2);
+    } catch (err) {
+      console.error(err);
+    }
+
+    switch (op) {
+      case "*":
+        result = num1 * num2;
+        break;
+      case "/":
+        result = num1 / num2;
+        break;
+      case "+":
+        result = num1 + num2;
+        break;
+      case "-":
+        result = num1 - num2;
+        break;
+    }
+
+    return result;
   }
 
   function parseExpressionToArray() {
@@ -137,6 +207,7 @@ function App() {
 
   return (
     <div className="calculator">
+      <Result result={result} />
       <Expression expression={expression} />
       <Display number={number} />
       <NumericKeypad
